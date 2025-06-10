@@ -1,0 +1,48 @@
+# .github/workflows/manual-build.yml
+name: Manual Windows Build
+
+# This allows you to run this workflow manually from the Actions tab
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest # This is the magic! It runs on a real Windows server.
+
+    steps:
+      - name: Enable Long Paths
+        run: git config --system core.longpaths true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive' # Important for some projects
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Install Visual Studio Build Tools & dependencies
+        uses: microsoft/vs-dev-essentials@v1
+        with:
+          # This installs the C++ workload required by Zed's docs
+          vs_version: 'latest'
+          workload_id: 'Microsoft.VisualStudio.Workload.VCTools'
+          # Add the specific components mentioned in Zed's docs
+          component_id: |
+            Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+            Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre
+            Microsoft.VisualStudio.Component.Windows11SDK
+            Microsoft.VisualStudio.Component.VC.CMake.Project
+
+      - name: Build Zed with Cargo
+        run: cargo build --release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zed-windows-exe
+          # The path to the compiled executable
+          path: target/release/zed.exe 
