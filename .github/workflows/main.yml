@@ -25,17 +25,13 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Install Visual Studio Build Tools & dependencies
-        uses: microsoft/vs-dev-essentials@v1
-        with:
-          # This installs the C++ workload required by Zed's docs
-          vs_version: 'latest'
-          workload_id: 'Microsoft.VisualStudio.Workload.VCTools'
-          # Add the specific components mentioned in Zed's docs
-          component_id: |
-            Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-            Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre
-            Microsoft.VisualStudio.Component.Windows11SDK
-            Microsoft.VisualStudio.Component.VC.CMake.Project
+        run: |
+          choco install visualstudio2022buildtools --yes --package-parameters \
+          "--add Microsoft.VisualStudio.Workload.VCTools \
+          --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
+          --add Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre \
+          --add Microsoft.VisualStudio.Component.Windows11SDK \
+          --add Microsoft.VisualStudio.Component.VC.CMake.Project"
 
       - name: Build Zed with Cargo
         run: cargo build --release
